@@ -5,7 +5,7 @@ from __future__ import annotations
 import heapq
 from dataclasses import dataclass, field
 
-from .grid import Grid, Loc, Path_
+from .graph import Graph, Node, NodePath
 
 
 @dataclass
@@ -17,18 +17,18 @@ class ConstraintTable:
     parked: loc -> t_from       -- ``loc`` is occupied by another agent for all t >= t_from
     """
 
-    vertex: set[tuple[Loc, int]] = field(default_factory=set)
-    edge: set[tuple[Loc, Loc, int]] = field(default_factory=set)
-    parked: dict[Loc, int] = field(default_factory=dict)
+    vertex: set[tuple[Node, int]] = field(default_factory=set)
+    edge: set[tuple[Node, Node, int]] = field(default_factory=set)
+    parked: dict[Node, int] = field(default_factory=dict)
 
-    def blocked(self, prev: Loc, loc: Loc, t: int) -> bool:
+    def blocked(self, prev: Node, loc: Node, t: int) -> bool:
         if (loc, t) in self.vertex:
             return True
         if prev != loc and (prev, loc, t) in self.edge:
             return True
         return loc in self.parked and t >= self.parked[loc]
 
-    def last_vertex_time(self, loc: Loc) -> int:
+    def last_vertex_time(self, loc: Node) -> int:
         """Latest time a vertex constraint applies to ``loc`` (-1 if none)."""
         return max((t for (vloc, t) in self.vertex if vloc == loc), default=-1)
 
@@ -38,13 +38,13 @@ class ConstraintTable:
 
 
 def space_time_astar(
-    grid: Grid,
-    start: Loc,
-    goal: Loc,
-    h: dict[Loc, int],
+    graph: Graph,
+    start: Node,
+    goal: Node,
+    h: dict[Node, int],
     table: ConstraintTable | None = None,
     max_t: int | None = None,
-) -> Path_ | None:
+) -> NodePath | None:
     """Shortest constraint-respecting path from ``start`` to ``goal``.
 
     The agent may wait. The goal only counts as reached once no later constraint
@@ -54,15 +54,15 @@ def space_time_astar(
     if start not in h or goal in table.parked:
         return None
     if max_t is None:
-        max_t = table.max_time() + len(grid.free_cells())
+        max_t = table.max_time() + len(graph)
     earliest_goal = table.last_vertex_time(goal) + 1
     if table.blocked(start, start, 0):
         return None
 
     counter = 0
-    open_heap: list[tuple[int, int, int, int, Loc]] = [(h[start], h[start], 0, counter, start)]
-    parent: dict[tuple[Loc, int], tuple[Loc, int] | None] = {(start, 0): None}
-    closed: set[tuple[Loc, int]] = set()
+    open_heap: list[tuple[int, int, int, int, Node]] = [(h[start], h[start], 0, counter, start)]
+    parent: dict[tuple[Node, int], tuple[Node, int] | None] = {(start, 0): None}
+    closed: set[tuple[Node, int]] = set()
 
     while open_heap:
         _, _, t, _, loc = heapq.heappop(open_heap)
@@ -70,15 +70,15 @@ def space_time_astar(
             continue
         closed.add((loc, t))
         if loc == goal and t >= earliest_goal:
-            path: Path_ = []
-            node: tuple[Loc, int] | None = (loc, t)
+            path: NodePath = []
+            node: tuple[Node, int] | None = (loc, t)
             while node is not None:
                 path.append(node[0])
                 node = parent[node]
             return path[::-1]
         if t >= max_t:
             continue
-        for nxt in grid.neighbors(loc):
+        for nxt in graph.moves(loc):
             if nxt not in h or table.blocked(loc, nxt, t + 1) or (nxt, t + 1) in closed:
                 continue
             if (nxt, t + 1) not in parent:

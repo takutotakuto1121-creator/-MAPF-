@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 
 from .astar import ConstraintTable, space_time_astar
-from .grid import Instance, Solution
+from .graph import Instance, Solution
 
 
 def prioritized_planning(instance: Instance, order: list[int] | None = None) -> Solution | None:
@@ -15,8 +15,8 @@ def prioritized_planning(instance: Instance, order: list[int] | None = None) -> 
     Returns ``None`` if some agent cannot be planned for the given order.
     """
     t0 = time.perf_counter()
-    grid = instance.grid
-    heuristics = [grid.distances_from(g) for g in instance.goals]
+    graph = instance.graph
+    heuristics = [graph.distances_from(g) for g in instance.goals]
     if order is None:
         order = sorted(
             range(instance.num_agents),
@@ -25,7 +25,7 @@ def prioritized_planning(instance: Instance, order: list[int] | None = None) -> 
     paths: list = [None] * instance.num_agents
     table = ConstraintTable()  # shared: every planned path becomes an obstacle for the rest
     for a in order:
-        path = space_time_astar(grid, instance.starts[a], instance.goals[a], heuristics[a], table)
+        path = space_time_astar(graph, instance.starts[a], instance.goals[a], heuristics[a], table)
         if path is None:
             return None
         paths[a] = path

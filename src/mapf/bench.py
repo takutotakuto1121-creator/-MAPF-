@@ -6,8 +6,8 @@ import argparse
 import statistics
 
 from .cbs import cbs
-from .grid import Grid, Instance
-from .movingai import load_map
+from .convert import load_graph
+from .graph import Instance
 from .pibt import pibt
 from .prioritized import prioritized_planning
 from .validate import validate
@@ -19,22 +19,15 @@ SOLVERS = {
 }
 
 
-def load_any_map(path: str) -> Grid:
-    if path.endswith(".map"):
-        return load_map(path)
-    lines = [ln.strip() for ln in open(path, encoding="utf-8") if ln.strip()]
-    return Grid.from_lines([ln for ln in lines if set(ln) <= set(".#@T")])
-
-
 def run(map_path: str, agent_counts: list[int], trials: int, timeout: float, algos: list[str]) -> str:
     """Markdown table. Cost/makespan are averaged over instances that *every* algorithm solved."""
-    grid = load_any_map(map_path)
+    graph = load_graph(map_path)
     rows = [
         "| agents | algo | solved | avg SoC | avg makespan | avg time [s] |",
         "|---:|---|---:|---:|---:|---:|",
     ]
     for n in agent_counts:
-        instances = [Instance.random(grid, n, seed) for seed in range(trials)]
+        instances = [Instance.random(graph, n, seed) for seed in range(trials)]
         results: dict[str, list] = {}
         for algo in algos:
             sols = []
@@ -60,10 +53,10 @@ def run(map_path: str, agent_counts: list[int], trials: int, timeout: float, alg
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--map", default="maps/room.txt")
-    ap.add_argument("-n", "--agents", type=int, nargs="+", default=[4, 8, 12, 16])
-    ap.add_argument("--trials", type=int, default=20)
-    ap.add_argument("--timeout", type=float, default=5.0, help="per-instance CBS timeout [s]")
+    ap.add_argument("--map", default="maps/room.json")
+    ap.add_argument("-n", "--agents", type=int, nargs="+", default=[4, 8, 12])
+    ap.add_argument("--trials", type=int, default=10)
+    ap.add_argument("--timeout", type=float, default=2.0, help="per-instance CBS timeout [s]")
     ap.add_argument("--algos", nargs="+", choices=SOLVERS, default=list(SOLVERS))
     args = ap.parse_args(argv)
     print(f"map: {args.map}, trials per setting: {args.trials}")

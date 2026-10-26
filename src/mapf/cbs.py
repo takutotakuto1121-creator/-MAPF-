@@ -7,16 +7,16 @@ import time
 from dataclasses import dataclass, field
 
 from .astar import ConstraintTable, space_time_astar
-from .grid import Instance, Loc, Path_, Solution, path_cost
+from .graph import Instance, Node, NodePath, Solution, path_cost
 from .validate import find_conflict
 
 
 @dataclass(frozen=True)
 class Constraint:
     agent: int
-    loc: Loc
+    loc: Node
     t: int
-    prev: Loc | None = None  # set => edge constraint (prev -> loc arriving at t)
+    prev: Node | None = None  # set => edge constraint (prev -> loc arriving at t)
 
 
 @dataclass(order=True)
@@ -24,7 +24,7 @@ class _Node:
     cost: int
     seq: int
     constraints: tuple[Constraint, ...] = field(compare=False)
-    paths: list[Path_] = field(compare=False)
+    paths: list[NodePath] = field(compare=False)
 
 
 def _table_for(agent: int, constraints: tuple[Constraint, ...]) -> ConstraintTable:
@@ -45,12 +45,12 @@ def cbs(instance: Instance, max_nodes: int = 100_000, timeout: float | None = No
     ``None`` means unsolvable *or* the node/time budget ran out.
     """
     t0 = time.perf_counter()
-    grid = instance.grid
-    heuristics = [grid.distances_from(g) for g in instance.goals]
+    graph = instance.graph
+    heuristics = [graph.distances_from(g) for g in instance.goals]
 
     root_paths = []
     for a in range(instance.num_agents):
-        p = space_time_astar(grid, instance.starts[a], instance.goals[a], heuristics[a])
+        p = space_time_astar(graph, instance.starts[a], instance.goals[a], heuristics[a])
         if p is None:
             return None
         root_paths.append(p)
@@ -81,7 +81,7 @@ def cbs(instance: Instance, max_nodes: int = 100_000, timeout: float | None = No
         for c in new:
             constraints = node.constraints + (c,)
             path = space_time_astar(
-                grid,
+                graph,
                 instance.starts[c.agent],
                 instance.goals[c.agent],
                 heuristics[c.agent],

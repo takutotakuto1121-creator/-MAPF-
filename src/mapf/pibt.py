@@ -1,8 +1,8 @@
 """PIBT (Okumura et al. 2022): Priority Inheritance with Backtracking.
 
 Very fast one-step-at-a-time planner that scales to hundreds of agents. Reaching all
-goals is not guaranteed on arbitrary maps (it is on e.g. biconnected graphs with free
-cells), so the solver gives up after ``max_steps``.
+goals is not guaranteed on arbitrary graphs (it is on e.g. biconnected graphs with spare
+nodes), so the solver gives up after ``max_steps``.
 """
 
 from __future__ import annotations
@@ -10,29 +10,29 @@ from __future__ import annotations
 import random
 import time
 
-from .grid import Instance, Loc, Solution
+from .graph import Instance, Node, Solution
 
 
 def pibt(instance: Instance, max_steps: int = 1000, seed: int = 0) -> Solution | None:
     t0 = time.perf_counter()
     rng = random.Random(seed)
-    grid = instance.grid
+    graph = instance.graph
     n = instance.num_agents
-    dist = [grid.distances_from(g) for g in instance.goals]
+    dist = [graph.distances_from(g) for g in instance.goals]
     if any(instance.starts[a] not in dist[a] for a in range(n)):
         return None
 
-    cur: list[Loc] = list(instance.starts)
+    cur: list[Node] = list(instance.starts)
     paths = [[s] for s in cur]
     priority = [rng.random() for _ in range(n)]  # tie-breaker in [0, 1), grows by 1 per waiting step
 
-    occ_now: dict[Loc, int] = {}
-    occ_next: dict[Loc, int] = {}
-    nxt: list[Loc | None] = [None] * n
+    occ_now: dict[Node, int] = {}
+    occ_next: dict[Node, int] = {}
+    nxt: list[Node | None] = [None] * n
 
     def plan(a: int) -> bool:
-        """Try to give agent ``a`` a cell for the next step, pushing others if needed."""
-        cands = grid.neighbors(cur[a])
+        """Try to give agent ``a`` a node for the next step, pushing others if needed."""
+        cands = graph.moves(cur[a])
         rng.shuffle(cands)
         cands.sort(key=lambda v: dist[a][v])
         for v in cands:

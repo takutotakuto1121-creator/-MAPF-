@@ -4,8 +4,8 @@ import argparse
 import sys
 
 from . import cbs, pibt, prioritized_planning, validate
-from .bench import load_any_map
-from .grid import Instance
+from .convert import load_graph
+from .graph import Instance
 from .movingai import load_scen
 from .visualize import render_ascii_all, render_svg
 
@@ -19,8 +19,10 @@ ALGOS = {
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="mapf", description="Multi-Agent Path Finding solver")
     src = ap.add_mutually_exclusive_group(required=True)
-    src.add_argument("scenario", nargs="?", help="scenario file (map, '---', agent lines)")
-    src.add_argument("--random", metavar="MAP", help="map file (.txt or MovingAI .map); random agents")
+    src.add_argument("scenario", nargs="?", help="scenario JSON file (graph + agents)")
+    src.add_argument(
+        "--random", metavar="MAP", help="graph JSON (or MovingAI .map / text grid); place random agents on it"
+    )
     src.add_argument("--movingai", nargs=2, metavar=("MAP", "SCEN"), help="MovingAI .map and .scen files")
     ap.add_argument("-n", "--agents", type=int, default=5, help="number of random agents")
     ap.add_argument("--seed", type=int, default=0)
@@ -31,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     if args.random:
-        instance = Instance.random(load_any_map(args.random), args.agents, args.seed)
+        instance = Instance.random(load_graph(args.random), args.agents, args.seed)
     elif args.movingai:
         instance = load_scen(args.movingai[0], args.movingai[1], args.agents)
     else:

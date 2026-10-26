@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="213" height="205" viewBox="0 0 213 205">
+<rect width="213" height="205" fill="#fafafa"/>
+<line x1="106.59" y1="21.0" x2="192.18" y2="83.19" stroke="#bbb" stroke-width="2"/>
+<line x1="192.18" y1="83.19" x2="159.48" y2="183.81" stroke="#bbb" stroke-width="2"/>
+<line x1="159.48" y1="183.81" x2="53.7" y2="183.81" stroke="#bbb" stroke-width="2"/>
+<line x1="53.7" y1="183.81" x2="21.0" y2="83.19" stroke="#bbb" stroke-width="2"/>
+<line x1="21.0" y1="83.19" x2="106.59" y2="21.0" stroke="#bbb" stroke-width="2"/>
+<line x1="106.59" y1="21.0" x2="106.59" y2="66.0" stroke="#bbb" stroke-width="2"/>
+<line x1="192.18" y1="83.19" x2="149.4" y2="97.08" stroke="#bbb" stroke-width="2"/>
+<line x1="159.48" y1="183.81" x2="133.05" y2="147.42" stroke="#bbb" stroke-width="2"/>
+<line x1="53.7" y1="183.81" x2="80.13" y2="147.42" stroke="#bbb" stroke-width="2"/>
+<line x1="21.0" y1="83.19" x2="63.78" y2="97.08" stroke="#bbb" stroke-width="2"/>
+<line x1="106.59" y1="66.0" x2="133.05" y2="147.42" stroke="#bbb" stroke-width="2"/>
+<line x1="149.4" y1="97.08" x2="80.13" y2="147.42" stroke="#bbb" stroke-width="2"/>
+<line x1="133.05" y1="147.42" x2="63.78" y2="97.08" stroke="#bbb" stroke-width="2"/>
+<line x1="80.13" y1="147.42" x2="106.59" y2="66.0" stroke="#bbb" stroke-width="2"/>
+<line x1="63.78" y1="97.08" x2="149.4" y2="97.08" stroke="#bbb" stroke-width="2"/>
+<circle cx="106.59" cy="21.0" r="4.2" fill="#999"/>
+<circle cx="192.18" cy="83.19" r="4.2" fill="#999"/>
+<circle cx="159.48" cy="183.81" r="4.2" fill="#999"/>
+<circle cx="53.7" cy="183.81" r="4.2" fill="#999"/>
+<circle cx="21.0" cy="83.19" r="4.2" fill="#999"/>
+<circle cx="106.59" cy="66.0" r="4.2" fill="#999"/>
+<circle cx="149.4" cy="97.08" r="4.2" fill="#999"/>
+<circle cx="133.05" cy="147.42" r="4.2" fill="#999"/>
+<circle cx="80.13" cy="147.42" r="4.2" fill="#999"/>
+<circle cx="63.78" cy="97.08" r="4.2" fill="#999"/>
+<text x="106.59" y="14.4" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">0</text>
+<text x="192.18" y="76.59" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">1</text>
+<text x="159.48" y="177.21" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">2</text>
+<text x="53.7" y="177.21" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">3</text>
+<text x="21.0" y="76.59" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">4</text>
+<text x="106.59" y="59.4" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">5</text>
+<text x="149.4" y="90.48" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">6</text>
+<text x="133.05" y="140.82" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">7</text>
+<text x="80.13" y="140.82" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">8</text>
+<text x="63.78" y="90.48" font-size="9.0" fill="#666" text-anchor="middle" font-family="sans-serif">9</text>
+<rect x="68.13" y="135.42" width="24.0" height="24.0" fill="none" stroke="#e6194b" stroke-width="2" stroke-dasharray="3"/>
+<rect x="121.05000000000001" y="135.42" width="24.0" height="24.0" fill="none" stroke="#3cb44b" stroke-width="2" stroke-dasharray="3"/>
+<rect x="137.4" y="85.08" width="24.0" height="24.0" fill="none" stroke="#4363d8" stroke-width="2" stroke-dasharray="3"/>
+<rect x="51.78" y="85.08" width="24.0" height="24.0" fill="none" stroke="#f58231" stroke-width="2" stroke-dasharray="3"/>
+<circle r="9.6" fill="#e6194b" cx="149.4" cy="97.08"><animate attributeName="cx" values="149.4;80.13;80.13;80.13" dur="1.5s" repeatCount="indefinite"/><animate attributeName="cy" values="97.08;147.42;147.42;147.42" dur="1.5s" repeatCount="indefinite"/></circle>
+<circle r="9.6" fill="#3cb44b" cx="63.78" cy="97.08"><animate attributeName="cx" values="63.78;133.05;133.05;133.05" dur="1.5s" repeatCount="indefinite"/><animate attributeName="cy" values="97.08;147.42;147.42;147.42" dur="1.5s" repeatCount="indefinite"/></circle>
+<circle r="9.6" fill="#4363d8" cx="106.59" cy="21.0"><animate attributeName="cx" values="106.59;192.18;149.4;149.4" dur="1.5s" repeatCount="indefinite"/><animate attributeName="cy" values="21.0;83.19;97.08;97.08" dur="1.5s" repeatCount="indefinite"/></circle>
+<circle r="9.6" fill="#f58231" cx="159.48" cy="183.81"><animate attributeName="cx" values="159.48;53.7;21.0;63.78" dur="1.5s" repeatCount="indefinite"/><animate attributeName="cy" values="183.81;183.81;83.19;97.08" dur="1.5s" repeatCount="indefinite"/></circle>
+</svg>

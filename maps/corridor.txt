@@ -1,7 +1,0 @@
-// Two agents swap through a corridor with one passing bay
-#####.#####
-...........
-#####.#####
----
-1 0 1 10
-1 10 1 0

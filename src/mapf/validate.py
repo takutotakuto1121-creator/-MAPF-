@@ -1,29 +1,29 @@
 """Conflict detection and solution validation.
 
-After its path ends an agent stays at its final cell (and keeps blocking it).
+After its path ends an agent stays at its final node (and keeps blocking it).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .grid import Instance, Loc, Path_
+from .graph import Instance, Node, NodePath
 
 
 @dataclass(frozen=True)
 class Conflict:
     a1: int
     a2: int
-    loc: Loc  # vertex conflict: shared cell; edge conflict: a1's destination
+    loc: Node  # vertex conflict: shared node; edge conflict: a1's destination
     t: int  # time step at which the conflict occurs (arrival time for edge conflicts)
-    prev: Loc | None = None  # edge conflict only: a1's origin (a2 moves loc -> prev)
+    prev: Node | None = None  # edge conflict only: a1's origin (a2 moves loc -> prev)
 
 
-def position(path: Path_, t: int) -> Loc:
+def position(path: NodePath, t: int) -> Node:
     return path[min(t, len(path) - 1)]
 
 
-def find_conflict(paths: list[Path_]) -> Conflict | None:
+def find_conflict(paths: list[NodePath]) -> Conflict | None:
     """Return the earliest conflict among ``paths`` or ``None``."""
     horizon = max(len(p) for p in paths)
     for t in range(horizon):
@@ -39,7 +39,7 @@ def find_conflict(paths: list[Path_]) -> Conflict | None:
     return None
 
 
-def validate(instance: Instance, paths: list[Path_]) -> list[str]:
+def validate(instance: Instance, paths: list[NodePath]) -> list[str]:
     """Return a list of human-readable problems; empty means the solution is valid."""
     errors: list[str] = []
     if len(paths) != instance.num_agents:
@@ -53,10 +53,10 @@ def validate(instance: Instance, paths: list[Path_]) -> list[str]:
         if p[-1] != instance.goals[a]:
             errors.append(f"agent {a}: path ends at {p[-1]}, expected {instance.goals[a]}")
         for t, loc in enumerate(p):
-            if not instance.grid.is_free(loc):
-                errors.append(f"agent {a}: t={t} at blocked/out-of-bounds cell {loc}")
-            if t > 0 and abs(loc[0] - p[t - 1][0]) + abs(loc[1] - p[t - 1][1]) > 1:
-                errors.append(f"agent {a}: t={t} illegal move {p[t - 1]} -> {loc}")
+            if loc not in instance.graph:
+                errors.append(f"agent {a}: t={t} at unknown node {loc!r}")
+            elif t > 0 and loc != p[t - 1] and not instance.graph.has_edge(p[t - 1], loc):
+                errors.append(f"agent {a}: t={t} illegal move {p[t - 1]!r} -> {loc!r} (no such edge)")
     if not errors:
         c = find_conflict(paths)
         if c is not None:

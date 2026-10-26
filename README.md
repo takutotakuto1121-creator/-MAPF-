@@ -2,7 +2,7 @@
 
 Multi-Agent Path Finding (MAPF) の学習・実験用プロジェクト。実行時の依存は **標準ライブラリのみ**(開発用に pytest / ruff)。
 
-![demo](docs/demo.svg)
+![demo](docs/demo.svg) ![petersen](docs/petersen.svg)
 
 ## 実装済みアルゴリズム
 
@@ -13,7 +13,7 @@ Multi-Agent Path Finding (MAPF) の学習・実験用プロジェクト。実行
 | PIBT | 一般にはなし | なし | 1ステップずつ決める。大規模でも高速 | `src/mapf/pibt.py` |
 
 共通部品: 時空間 A*(待機・頂点制約・辺制約・ゴール到達後の占有を考慮、`astar.py`)、衝突検出と解の検証(`validate.py`)、
-MovingAI ベンチマーク形式の読み込み(`movingai.py`)、ASCII / アニメーション SVG 出力(`visualize.py`)。
+MovingAI ベンチマーク形式の読み込み(`movingai.py`)、グリッド → グラフ JSON 変換(`convert.py`)、ASCII / アニメーション SVG 出力(`visualize.py`)。
 
 ## クイックスタート
 
@@ -29,27 +29,59 @@ make help                        # ターゲット一覧
 CLI を直接使う場合:
 
 ```bash
-python -m mapf maps/corridor.txt -a cbs --ascii
-python -m mapf --random maps/room.txt -n 8 --seed 3 -a pp --svg out.svg
+python -m mapf maps/ring.json -a cbs --ascii
+python -m mapf maps/petersen.json --svg out.svg
+python -m mapf --random maps/room.json -n 8 --seed 3 -a pp
 python -m mapf --movingai empty-8-8.map empty-8-8-random-1.scen -n 20 -a pibt
-python -m mapf.bench --map maps/room.txt -n 4 8 12 --trials 20 --timeout 2
+python -m mapf.bench --map maps/room.json -n 4 8 12 --trials 20 --timeout 2
+python -m mapf.convert maps/some.map out.json     # グリッド → グラフ JSON
 ```
 
 終了コード: `0` 成功 / `1` 解なし(または探索上限) / `2` 解が検証に失敗。
 
-## 入力形式
+## マップ(グラフ)と問題の JSON 形式
 
-**独自形式**(`maps/*.txt`): マップ(`.` 空き / `#` 障害物)、`---`、各エージェントの `start_row start_col goal_row goal_col`。`//` 以降はコメント。座標は `(row, col)`、左上が原点。
+マップは **無向グラフ** です。エージェントは1ステップで「その場で待つ」か「辺を1本進む」かのどちらかを行います。
+グリッドも、グリッドから作ったグラフとして扱います。
 
-**MovingAI 形式**: [MAPF ベンチマーク](https://movingai.com/benchmarks/mapf/) の `.map` / `.scen` をそのまま読めます(`.scen` の座標は x=列, y=行)。`.` `G` `S` を通行可、それ以外を障害物として扱います。
+```json
+{
+  "graph": {
+    "nodes": ["A", "B", {"id": "C", "pos": [2, 0]}, "D"],
+    "edges": [["A", "B"], ["B", "C"], ["C", "D"], ["B", "D"]]
+  },
+  "agents": [
+    {"start": "A", "goal": "D"},
+    {"start": "D", "goal": "A"}
+  ]
+}
+```
+
+- `nodes`: ノード ID(整数または文字列)、または `{"id": ..., "pos": [x, y]}`。`pos` は描画専用の省略可能な座標で、無い場合は円形に配置します。全ノードに整数の `pos` があると、ASCII 表示は格子として描画します(ノードが無い位置は `#`)。
+- `edges`: `[u, v]` の配列。無向で、重複した辺は1本にまとめます。自己ループと未定義ノードへの辺はエラーです。
+- `agents`: 各エージェントの `start` と `goal`。始点どうし、終点どうしは重複不可です。
+- マップだけのファイル(`{"nodes": ..., "edges": ...}` または `{"graph": ...}`)も `--random` と `mapf.bench` に渡せます。
+
+`maps/` のサンプル: `crossing.json`、`corridor.json`(グリッド)、`ring.json`(文字列 ID、座標なし)、`petersen.json`(ペテルセングラフ)、`room.json`(8x8 の部屋、マップのみ)。
+MovingAI の `.map` / `.scen` はそのまま読み込めて、グリッドは4近傍のグラフになります(ノード ID は空きマスの行優先の通し番号、`pos = [列, 行]`)。`.` `G` `S` が通行可、それ以外は障害物です。
+
+Python から使う場合:
+
+```python
+from mapf import Graph, Instance, cbs
+
+graph = Graph(["A", "B", "C"], [("A", "B"), ("B", "C")])
+sol = cbs(Instance(graph, ("A",), ("C",)))
+print(sol.paths)  # [['A', 'B', 'C']]
+```
 
 ## 問題設定
 
-4近傍+待機、全エージェント同時移動。頂点衝突と交換(スワップ)衝突を禁止。ゴール到達後もそのセルに留まり、他のエージェントを塞ぎ続けます。目的関数は sum-of-costs(各エージェントが最終的にゴールに着く時刻の合計)と makespan。
+全エージェントが同時に移動。頂点衝突と交換(スワップ)衝突を禁止。ゴール到達後もそのノードに留まり、他のエージェントを塞ぎ続けます。目的関数は sum-of-costs(各エージェントが最終的にゴールに着く時刻の合計)と makespan。
 
 ## ベンチマーク例
 
-`maps/room.txt`(8x8)、各20問、CBS のタイムアウト2秒。コスト・時間は全手法が解けた問題の平均。`solved` は各手法が解けた数。
+`maps/room.json`(8x8 のグリッド)、各20問、CBS のタイムアウト2秒。コスト・時間は全手法が解けた問題の平均。`solved` は各手法が解けた数。
 
 | agents | algo | solved | avg SoC | avg makespan | avg time [s] |
 |---:|---|---:|---:|---:|---:|
