@@ -196,3 +196,12 @@ def test_cli_end_to_end(tmp_path):
             assert svg.read_text().startswith("<svg")
     assert main(["--random", "maps/room.json", "-n", "5"]) == 0
     assert main(["--movingai", "tests/data/tiny.map", "tests/data/tiny.scen", "-n", "3"]) == 0
+
+
+@pytest.mark.parametrize("algo", [prioritized_planning, pibt])
+def test_large_warehouse_with_40_agents(algo):
+    inst = Instance.load("maps/warehouse.json")
+    assert inst.num_agents == 40 and len(inst.graph) == 966
+    sol = algo(inst)
+    assert sol is not None
+    assert validate(inst, sol.paths) == []

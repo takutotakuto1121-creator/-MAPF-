@@ -62,7 +62,7 @@ python -m mapf.convert maps/some.map out.json     # グリッド → グラフ J
 - `agents`: 各エージェントの `start` と `goal`。始点どうし、終点どうしは重複不可です。
 - マップだけのファイル(`{"nodes": ..., "edges": ...}` または `{"graph": ...}`)も `--random` と `mapf.bench` に渡せます。
 
-`maps/` のサンプル: `crossing.json`、`corridor.json`(グリッド)、`ring.json`(文字列 ID、座標なし)、`petersen.json`(ペテルセングラフ)、`room.json`(8x8 の部屋、マップのみ)。
+`maps/` のサンプル: `crossing.json`、`corridor.json`(グリッド)、`ring.json`(文字列 ID、座標なし)、`petersen.json`(ペテルセングラフ)、`room.json`(8x8 の部屋、マップのみ)、`warehouse.json`(54x29 の倉庫、966ノード、**40エージェント**)。
 MovingAI の `.map` / `.scen` はそのまま読み込めて、グリッドは4近傍のグラフになります(ノード ID は空きマスの行優先の通し番号、`pos = [列, 行]`)。`.` `G` `S` が通行可、それ以外は障害物です。
 
 Python から使う場合:
@@ -94,6 +94,16 @@ print(sol.paths)  # [['A', 'B', 'C']]
 | 12 | cbs | 3/20 | 87.0 | 11.0 | 0.2654 |
 | 12 | pp | 13/20 | 98.0 | 11.0 | 0.0024 |
 | 12 | pibt | 10/20 | 99.0 | 12.0 | 0.0020 |
+
+大規模な例(`maps/warehouse.json`、40エージェント)の結果:
+
+| algo | sum of costs | makespan | time |
+|---|---:|---:|---:|
+| pp | 1384 | 71 | 0.17 s |
+| pibt | 1494 | 71 | 0.02 s |
+| cbs | 解けず(5秒、20秒とも時間切れ) | - | - |
+
+![warehouse](docs/warehouse.svg)
 
 読み取れること: CBS は最もコストが小さい一方、12台ではタイムアウトが増える。PP は速くコストも近いが、混むと失敗する。
 PIBT は行き止まりのある狭い地図では完走できないことがある(完全性は袋小路のない地図が前提)。12台の行は、CBS が解けた3問だけの平均で、他の行より母数が小さい点に注意。
