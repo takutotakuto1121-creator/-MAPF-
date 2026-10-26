@@ -1,4 +1,5 @@
 """Conflict-Based Search (Sharon et al. 2015): complete and optimal for sum of costs."""
+
 from __future__ import annotations
 
 import heapq
@@ -80,8 +81,11 @@ def cbs(instance: Instance, max_nodes: int = 100_000, timeout: float | None = No
         for c in new:
             constraints = node.constraints + (c,)
             path = space_time_astar(
-                grid, instance.starts[c.agent], instance.goals[c.agent],
-                heuristics[c.agent], _table_for(c.agent, constraints),
+                grid,
+                instance.starts[c.agent],
+                instance.goals[c.agent],
+                heuristics[c.agent],
+                _table_for(c.agent, constraints),
             )
             if path is None:
                 continue

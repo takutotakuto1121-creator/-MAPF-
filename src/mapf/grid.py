@@ -2,6 +2,7 @@
 
 Coordinates are ``(row, col)``; ``(0, 0)`` is the top-left cell.
 """
+
 from __future__ import annotations
 
 import random
@@ -22,7 +23,7 @@ class Grid:
     obstacles: frozenset[Loc]
 
     @classmethod
-    def from_lines(cls, lines: list[str]) -> "Grid":
+    def from_lines(cls, lines: list[str]) -> Grid:
         if not lines:
             raise ValueError("empty map")
         cols = len(lines[0])
@@ -85,7 +86,7 @@ class Instance:
         return len(self.starts)
 
     @classmethod
-    def load(cls, path: str | Path) -> "Instance":
+    def load(cls, path: str | Path) -> Instance:
         """Load a scenario file.
 
         Format: map lines (``.`` free, ``#`` obstacle), a line ``---``, then one
@@ -112,7 +113,7 @@ class Instance:
         return cls(grid, tuple(starts), tuple(goals))
 
     @classmethod
-    def random(cls, grid: Grid, num_agents: int, seed: int | None = None) -> "Instance":
+    def random(cls, grid: Grid, num_agents: int, seed: int | None = None) -> Instance:
         """Random starts/goals; every agent's goal is reachable from its start."""
         rng = random.Random(seed)
         cells = grid.free_cells()
@@ -121,7 +122,7 @@ class Instance:
         for _ in range(1000):
             starts = rng.sample(cells, num_agents)
             goals = rng.sample(cells, num_agents)
-            if all(g in grid.distances_from(s) for s, g in zip(starts, goals)):
+            if all(g in grid.distances_from(s) for s, g in zip(starts, goals, strict=True)):
                 return cls(grid, tuple(starts), tuple(goals))
         raise RuntimeError("could not generate a solvable-looking instance")
 

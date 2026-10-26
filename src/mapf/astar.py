@@ -1,4 +1,5 @@
 """Space-time A* for a single agent under constraints."""
+
 from __future__ import annotations
 
 import heapq
@@ -29,7 +30,7 @@ class ConstraintTable:
 
     def last_vertex_time(self, loc: Loc) -> int:
         """Latest time a vertex constraint applies to ``loc`` (-1 if none)."""
-        return max((t for (l, t) in self.vertex if l == loc), default=-1)
+        return max((t for (vloc, t) in self.vertex if vloc == loc), default=-1)
 
     def max_time(self) -> int:
         times = [t for _, t in self.vertex] + [t for *_, t in self.edge] + list(self.parked.values())

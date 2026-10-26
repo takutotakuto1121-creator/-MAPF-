@@ -1,4 +1,5 @@
 """Prioritized Planning (Silver 2005): fast, but incomplete and suboptimal."""
+
 from __future__ import annotations
 
 import time

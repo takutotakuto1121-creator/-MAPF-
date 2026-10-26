@@ -2,6 +2,7 @@
 
 After its path ends an agent stays at its final cell (and keeps blocking it).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

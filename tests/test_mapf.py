@@ -1,6 +1,16 @@
 import pytest
 
-from mapf import Grid, Instance, cbs, find_conflict, prioritized_planning, validate
+from mapf import (
+    Grid,
+    Instance,
+    cbs,
+    find_conflict,
+    load_map,
+    load_scen,
+    pibt,
+    prioritized_planning,
+    validate,
+)
 from mapf.astar import ConstraintTable, space_time_astar
 
 
@@ -76,3 +86,38 @@ def test_random_instances_cbs_valid_and_not_worse_than_pp(seed):
     if p is not None:
         assert validate(inst, p.paths) == []
         assert c.sum_of_costs <= p.sum_of_costs
+
+
+def test_pibt_solves_open_grid_and_is_valid():
+    grid = open_grid(6)
+    for seed in range(10):
+        inst = Instance.random(grid, 10, seed)
+        sol = pibt(inst, seed=seed)
+        assert sol is not None
+        assert validate(inst, sol.paths) == []
+
+
+def test_movingai_loader():
+    grid = load_map("tests/data/tiny.map")
+    assert (grid.rows, grid.cols) == (5, 6)
+    assert {(1, 1), (1, 2), (1, 3), (3, 1), (3, 2)} == set(grid.obstacles)
+    inst = load_scen("tests/data/tiny.map", "tests/data/tiny.scen", 3)
+    assert inst.starts[0] == (0, 0) and inst.goals[0] == (4, 5)  # (x, y) -> (row, col)
+    sol = cbs(inst)
+    assert validate(inst, sol.paths) == []
+
+
+def test_movingai_skips_blocked_and_duplicate_agents():
+    # the 4th line starts on an obstacle ((1,1) is '@'), so only 3 agents are usable
+    with pytest.raises(ValueError):
+        load_scen("tests/data/tiny.map", "tests/data/tiny.scen", 4)
+
+
+def test_cli_end_to_end(tmp_path, capsys):
+    from mapf.cli import main
+
+    svg = tmp_path / "out.svg"
+    for algo in ("cbs", "pp", "pibt"):
+        assert main(["maps/crossing.txt", "-a", algo, "--svg", str(svg)]) == 0
+    assert svg.read_text().startswith("<svg")
+    assert main(["--movingai", "tests/data/tiny.map", "tests/data/tiny.scen", "-n", "3"]) == 0
