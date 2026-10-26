@@ -23,20 +23,39 @@ def position(path: NodePath, t: int) -> Node:
     return path[min(t, len(path) - 1)]
 
 
+def _conflicts_at(paths: list[NodePath], t: int):
+    """Yield every conflict at time ``t`` as ``Conflict`` objects (vertex conflicts first)."""
+    now = [position(p, t) for p in paths]
+    seen: dict[Node, int] = {}
+    for a, loc in enumerate(now):
+        if loc in seen:
+            yield Conflict(seen[loc], a, loc, t)
+        else:
+            seen[loc] = a
+    if t > 0:
+        before = [position(p, t - 1) for p in paths]
+        moved = {(before[a], now[a]): a for a in range(len(paths)) if before[a] != now[a]}
+        for a in range(len(paths)):
+            if before[a] != now[a]:
+                b = moved.get((now[a], before[a]))
+                if b is not None and a < b:
+                    yield Conflict(a, b, now[a], t, prev=before[a])
+
+
 def find_conflict(paths: list[NodePath]) -> Conflict | None:
     """Return the earliest conflict among ``paths`` or ``None``."""
-    horizon = max(len(p) for p in paths)
-    for t in range(horizon):
-        for i in range(len(paths)):
-            for j in range(i + 1, len(paths)):
-                if position(paths[i], t) == position(paths[j], t):
-                    return Conflict(i, j, position(paths[i], t), t)
-                if t > 0:
-                    pi0, pi1 = position(paths[i], t - 1), position(paths[i], t)
-                    pj0, pj1 = position(paths[j], t - 1), position(paths[j], t)
-                    if pi0 == pj1 and pi1 == pj0 and pi0 != pi1:
-                        return Conflict(i, j, pi1, t, prev=pi0)
+    for t in range(max(len(p) for p in paths)):
+        for c in _conflicts_at(paths, t):
+            return c
     return None
+
+
+def count_conflicts(paths: list[NodePath]) -> int:
+    """Number of conflicting (agent pair, time) occurrences; 0 iff the paths are conflict-free."""
+    total = 0
+    for t in range(max(len(p) for p in paths)):
+        total += sum(1 for _ in _conflicts_at(paths, t))
+    return total
 
 
 def validate(instance: Instance, paths: list[NodePath]) -> list[str]:

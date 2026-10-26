@@ -5,7 +5,7 @@ AGENTS ?= 8
 SEED   ?= 0
 MAP    ?= maps/room.json
 
-.PHONY: help install test cov lint fmt check demo svg bench convert clean
+.PHONY: bench-large help install test cov lint fmt check demo svg bench convert clean
 
 help: ## show this help
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
@@ -38,6 +38,9 @@ svg: ## write an animated SVG of a random instance to out.svg
 
 bench: ## compare cbs / pp / pibt on random instances
 	$(PYTHON) -m mapf.bench --map $(MAP)
+
+bench-large: ## run every algorithm on the 40-agent warehouse scenario
+	$(PYTHON) -m mapf.bench --scenario maps/warehouse.json --timeout 10
 
 convert: ## convert a grid map to graph JSON: make convert IN=a.map OUT=a.json
 	$(PYTHON) -m mapf.convert $(IN) $(OUT)
