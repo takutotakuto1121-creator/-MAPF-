@@ -1,0 +1,14 @@
+{
+  "graph": {
+    "nodes": ["A", "B", "C", "D", "E", "F"],
+    "edges": [
+      ["A", "B"], ["B", "C"], ["C", "D"], ["D", "E"], ["E", "F"], ["F", "A"],
+      ["B", "E"]
+    ]
+  },
+  "agents": [
+    {"start": "A", "goal": "D"},
+    {"start": "D", "goal": "A"},
+    {"start": "C", "goal": "F"}
+  ]
+}
